@@ -35,8 +35,6 @@ brews:
       owner: danielrosse
       name: homebrew-env
     folder: Formula
-    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
-    custom_require: "../lib/custom_download_strategy"
     commit_author:
       name: server-cx
       email: daniel.rossello@secuoyas.com
