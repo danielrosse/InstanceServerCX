@@ -25,7 +25,7 @@ func Execute() {
 }
 
 const (
-	sitesFolder = "./.exports/sites"
+	sitesFolder = "./exports/sites"
 	port        = "5555"
 )
 
