@@ -6,6 +6,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 	"io"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,14 +25,16 @@ func Execute() {
 	}
 }
 
-const (
-	sitesFolder = "./exports/sites"
-	port        = "5555"
+var (
+	sitesFolder    string
+	port           string
+	selectedFolder string
 )
 
-var selectedFolder string
-
 func init() {
+	// Preguntas para configurar sitesFolder y port
+	promptForConfiguration()
+
 	folders := getFolders(sitesFolder)
 	if len(folders) > 0 {
 		selectFolder(folders)
@@ -39,6 +42,21 @@ func init() {
 	} else {
 		fmt.Println("No folders were found in ", sitesFolder)
 	}
+}
+
+func promptForConfiguration() {
+	defaultSitesFolder := "./exports/sites"
+	defaultPort := "5555"
+
+	survey.AskOne(&survey.Input{
+		Message: "Enter the sites folder:",
+		Default: defaultSitesFolder,
+	}, &sitesFolder)
+
+	survey.AskOne(&survey.Input{
+		Message: "Enter the port:",
+		Default: defaultPort,
+	}, &port)
 }
 
 func getFolders(pathFolder string) (folders []string) {
@@ -110,14 +128,33 @@ func copyConfiguration() {
 
 	logs.SuccessLog("Copied server configuration")
 	logs.SuccessLog(fmt.Sprintln("Serving from the folder: ", filepath.Join(sitesFolder, selectedFolder, "dist")))
-	logs.SuccessLog(fmt.Sprintln("http://localhost: ", port, "/"))
+	localIP := getLocalIP()
+	logs.SuccessLog(fmt.Sprintln("http://", localIP, ":", port, "/"))
 
 	launchServer()
 }
 
+func getLocalIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		logs.FatalLog(fmt.Sprintln("Error getting local IP: ", err.Error()))
+	}
+
+	for _, addr := range addrs {
+		if ipNet, ok := addr.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
+			if ipNet.IP.To4() != nil {
+				return ipNet.IP.String()
+			}
+		}
+	}
+
+	logs.FatalLog("No IP address found")
+	return ""
+}
+
 func launchServer() {
 	logs.SuccessLog(fmt.Sprintln("Starting the server in the folder: ", selectedFolder))
-	cmd := exec.Command("serve", "-p", port, filepath.Join(sitesFolder, selectedFolder, "dist"))
+	cmd := exec.Command("serve", "-l", fmt.Sprintf("tcp://0.0.0.0:%s", port), filepath.Join(sitesFolder, selectedFolder, "dist"))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
