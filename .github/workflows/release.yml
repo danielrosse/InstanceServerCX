@@ -1,6 +1,7 @@
 name: goreleaser
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "*"
@@ -31,6 +32,6 @@ jobs:
         with:
           distribution: goreleaser
           version: ${{ env.GITHUB_REF_NAME }}
-          args: release --rm-dist
+          args: release
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLISHER_TOKEN }}
