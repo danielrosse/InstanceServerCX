@@ -1,6 +1,7 @@
 name: goreleaser
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "*"
@@ -10,27 +11,27 @@ permissions:
 
 jobs:
   goreleaser:
+    name: Release
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      -
-        name: Fetch all tags
+      - name: Fetch all tags
         run: git fetch --force --tags
-      -
-        name: Set up Go
+      - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: 1.20.4
-      -
-        name: Run GoReleaser
+          go-version: ^1.21
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
           distribution: goreleaser
           version: ${{ env.GITHUB_REF_NAME }}
-          args: release --rm-dist
+          args: release --rm-dist --skip-validate
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLISHER_TOKEN }}
