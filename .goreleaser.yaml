@@ -36,7 +36,7 @@ brews:
     repository:
       owner: danielrosse
       name: homebrew-env
-    folder: Formula
+    directory: Formula
     commit_author:
       name: server-cx
       email: daniel.rossello@secuoyas.com
