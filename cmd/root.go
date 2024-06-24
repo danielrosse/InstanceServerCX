@@ -25,14 +25,16 @@ func Execute() {
 	}
 }
 
-const (
-	sitesFolder = "./exports/sites"
-	port        = "5555"
+var (
+	sitesFolder    string
+	port           string
+	selectedFolder string
 )
 
-var selectedFolder string
-
 func init() {
+	// Preguntas para configurar sitesFolder y port
+	promptForConfiguration()
+
 	folders := getFolders(sitesFolder)
 	if len(folders) > 0 {
 		selectFolder(folders)
@@ -40,6 +42,21 @@ func init() {
 	} else {
 		fmt.Println("No folders were found in ", sitesFolder)
 	}
+}
+
+func promptForConfiguration() {
+	defaultSitesFolder := "./exports/sites"
+	defaultPort := "5555"
+
+	survey.AskOne(&survey.Input{
+		Message: "Enter the sites folder:",
+		Default: defaultSitesFolder,
+	}, &sitesFolder)
+
+	survey.AskOne(&survey.Input{
+		Message: "Enter the port:",
+		Default: defaultPort,
+	}, &port)
 }
 
 func getFolders(pathFolder string) (folders []string) {
